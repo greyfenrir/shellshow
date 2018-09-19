@@ -2,6 +2,7 @@ import os
 import subprocess
 import tempfile
 import sys
+import time
 
 
 class BaseHang(object):
@@ -63,8 +64,8 @@ class PipHang(BaseHang):
 
 class TypeHang(BaseHang):
     """
-    win, py3, type: wait & 4K
-    lin py2/py3, cat/tail: shell
+    win, py3, type: wait && 4K
+    lin py2/py3, cat(int)/tail(ext): shell || (wait && 64K)
     """
 
     def __init__(self):
@@ -75,11 +76,12 @@ class TypeHang(BaseHang):
         else:
             cmd = ['tail']
         self.kwargs['args'] = cmd + [self.tmp_file]
-        self.text = '*' * 50000
+        self.text = '*' * 66000
 
     def _in_the_middle(self):
         proc = subprocess.Popen(**self.kwargs)
-        proc.wait()  # cause #1
+        time.sleep(2)
+        #proc.wait()  # cause #1
         out, err = proc.communicate()
 
         print("OUT:[%s]\n%s\n\nERR:\n%s\n" % (len(out), out, err))
