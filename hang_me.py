@@ -6,10 +6,15 @@ import time
 
 
 class BaseHang(object):
-    def __init__(self):
+    @staticmethod
+    def get_tmp_name():
         fd, file_name = tempfile.mkstemp()
         os.close(fd)
-        self.tmp_file = file_name
+        return file_name
+
+    def __init__(self):
+        self.tmp_file = BaseHang.get_tmp_name()
+
         self.kwargs = {
             'stderr': subprocess.PIPE,
             'stdout': subprocess.PIPE}
@@ -70,20 +75,31 @@ class TypeHang(BaseHang):
 
     def __init__(self):
         super(TypeHang, self).__init__()
-        # self.kwargs['shell'] = True
+        self.kwargs['shell'] = True
         if sys.platform == "win32":
             cmd = ['cmd', '/c', 'type']
         else:
             cmd = ['tail']
         self.kwargs['args'] = cmd + [self.tmp_file]
-        self.text = '*' * 66000
+        self.kwargs['args'] = 'tail ' + self.tmp_file
+        self.text = '*' * 6000
+        #self.kwargs['stderr'] = open(BaseHang.get_tmp_name(), 'at')
+        #self.kwargs['stdout'] = open(BaseHang.get_tmp_name(), 'at')
 
     def _in_the_middle(self):
         proc = subprocess.Popen(**self.kwargs)
-        time.sleep(2)
-        #proc.wait()  # cause #1
-        out, err = proc.communicate()
+        #time.sleep(5)
+        proc.wait()  # cause #1
+        #proc.stdout.close()
+        #proc.stderr.close()
+        #out, err = proc.communicate()
 
+        #time.sleep(1)
+        #proc.stderr.close()
+
+        #proc.stdout.close()
+
+        out, err = proc.communicate()
         print("OUT:[%s]\n%s\n\nERR:\n%s\n" % (len(out), out, err))
 
 
